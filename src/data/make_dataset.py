@@ -124,14 +124,14 @@ def save_file(url, destdir):
 
 
 def process(filepath):
-    global data
+    global data, logger
     '''
     Exécute le code de traitement des données pour transformer les données brutes (dans ../raw) 
     en données nettoyées prêtes à être analysées (enregistrées dans ../ processed).
     '''
 
     today_str = datetime.datetime.now().strftime("%Y%m%d")
-    logger = logging.getLogger(__name__)
+    
     logger.info('Cleaning data from Ontario Open Data Portal')
 
     filename = os.path.basename(filepath)
@@ -160,6 +160,7 @@ if __name__ == '__main__':
 
     log_fmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     logging.basicConfig(level=logging.INFO, format=log_fmt)
+    logger = logging.getLogger(__name__)
 
     parser = argparse.ArgumentParser(prog=os.path.basename(__file__))
     parser.add_argument('-f', '--filepath', help='Path or url of file to clean',  action='store', default=os.getcwd())
