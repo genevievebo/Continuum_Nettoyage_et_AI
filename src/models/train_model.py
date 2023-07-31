@@ -14,7 +14,9 @@ from sklearn.linear_model import LinearRegression, Ridge, LogisticRegression
 from sklearn.dummy import DummyRegressor, DummyClassifier
 from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
 from sklearn.svm import SVR, SVC
+from sklearn import metrics
 from data.dataset import OatsDataset
+
 
 
 def train_regression(X_train, y_train, estimators, parameters, scoring='r2_score', cv=5):
@@ -23,7 +25,6 @@ def train_regression(X_train, y_train, estimators, parameters, scoring='r2_score
     A grid search is used to find the best parameters
     '''
     results = []
-    
     for estimator in estimators.keys():
         params = parameters.copy()
         pipeline = Pipeline([('imputer', None), ('scaler', None), 
@@ -35,9 +36,17 @@ def train_regression(X_train, y_train, estimators, parameters, scoring='r2_score
         cv_results = grid_search.cv_results_
         best_estimator = grid_search.best_estimator_     
         results.append([estimator, grid_search.best_score_, grid_search.best_params_, cv_results, best_estimator])
-    
     return results
 
+
+def evaluate_regression(X_test, y_test, estimator):
+    '''
+    The function evaluates the model on the test set
+    '''
+    y_pred = estimator.predict(X_test)
+    mse = metrics.mean_squared_error(y_test, y_pred)
+    r2 = metrics.r2_score(y_test, y_pred)
+    return mse, r2
 
 if __name__ == '__main__':
     log_fmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -59,20 +68,24 @@ if __name__ == '__main__':
         'SVR': {}
     }
     
-    
+    random_seed = 42
+    test_size = 0.2
     dataset = OatsDataset()
     dataset.load()
    
     logger.info(f'Loading {dataset.name} - {dataset.path}')
 
-    results = train_regression(dataset.X, dataset.y, estimators, transformers)
-    results = pd.DataFrame(results, columns=['estimator', 'best_score', 'best_params', 'cv_results', 'best_estimator'])
+    dataset.X, dataset.y
+    X_train, X_test, y_train, y_test = train_test_split(dataset.X, dataset.y, 
+                                                        test_size=test_size, random_state=random_seed)
+
+    train_results = train_regression(X_train, y_train, estimators, transformers, randome_seed=random_seed)
+    train_results = pd.DataFrame(train_results, columns=['estimator', 'best_score', 'best_params', 'cv_results', 'best_estimator'])
     today = datetime.datetime.now().strftime("%Y%m%d")
     dest = F'models/{today}'
     if not os.path.exists(dest):
         os.makedirs(dest)
-    results.to_csv(F'{dest}/results.{today}.csv')
-    
+    train_results.to_csv(F'{dest}/train_results.{today}.csv')
     logger.info(f'Training done  - Results saved in {dest}/results.{today}.csv ')
     
     
