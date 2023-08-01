@@ -88,5 +88,5 @@ if __name__ == '__main__':
     train_results.to_csv(F'{dest}/train_results.{today}.csv')
     logger.info(f'Training done  - Results saved in {dest}/results.{today}.csv ')
     
-    
+    evaluate_regression(X_test, y_test, estimator)
     
